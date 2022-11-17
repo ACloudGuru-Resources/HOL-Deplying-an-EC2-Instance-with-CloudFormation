@@ -1,15 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: Deploy an EC2 instance with basic networking
-Parameters:
-  InstanceTypeParameter:
-    Type: String
-    Default: t3.micro
-    AllowedValues:
-      - t3.micro
-      - t3.small
-      - t3.medium
-      - t3.large
-    Description: "Select the image type"
 Mappings:
   Subnet1Config:
     VPC1:
@@ -176,8 +166,8 @@ Resources:
   EC2Instance1:
     Type: 'AWS::EC2::Instance'
     Properties:
-      InstanceType: !Ref InstanceTypeParameter
-      ImageId: ami-09d3b3274b6c5d4aa
+      InstanceType: t3.micro
+      ImageId: <INSERT AMI>
       Tags:
         - Key: Name
           Value: MyInstance
