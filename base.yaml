@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: Creates 3 VPCs and 3 EC2 Instances that allow ssh access
+Description: Deploys basic networking and an EC2 instance
 Mappings:
   Subnet1Config:
     VPC1:
