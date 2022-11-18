@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: Deploys basic networking and an EC2 instance
+Description: Creates 3 VPCs and 3 EC2 Instances that allow ssh access
 Mappings:
   Subnet1Config:
     VPC1:
@@ -35,9 +35,7 @@ Resources:
         - CIDR
       Tags:
         - Key: Name
-          Value: IronCityProdSubnet
-        - Key: Environment
-          Value: Prod
+          Value: ACG_PUBLIC_1
   VPC1PublicSubnet2:
     Type: 'AWS::EC2::Subnet'
     Properties:
@@ -52,9 +50,7 @@ Resources:
         - CIDR
       Tags:
         - Key: Name
-          Value: IronCityPreProdSubnet
-        - Key: Environment
-          Value: PreProd
+          Value: ACG_PUBLIC_2
   InternetGateway1:
     Type: 'AWS::EC2::InternetGateway'
     Properties:
