@@ -177,7 +177,7 @@ Resources:
     Type: 'AWS::EC2::Instance'
     Properties:
       InstanceType: !Ref InstanceTypeParameter
-      ImageId: 'ami-0b0dcb5067f052a63'
+      ImageId: 'ami-0bb4c991fa89d4b9b'
       UserData: 
         Fn::Base64:
           !Sub |
