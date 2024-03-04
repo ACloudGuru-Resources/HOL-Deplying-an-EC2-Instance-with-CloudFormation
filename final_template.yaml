@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: Creates 3 VPCs and 3 EC2 Instances that allow ssh access
+Description: Deploys basic networking and an EC2 instance
 Parameters:
   InstanceTypeParameter:
     Type: String
@@ -9,7 +9,7 @@ Parameters:
       - t3.small
       - t3.medium
       - t3.large
-    Description: "Select an instance type."
+    Description: "Select an Instance Type"
 Mappings:
   Subnet1Config:
     VPC1:
@@ -78,7 +78,7 @@ Resources:
       VpcId: !Ref VPC1
       Tags:
         - Key: Name
-          Value: ACG_VPC
+          Value: ACG_RT
   PublicRoute1:
     Type: 'AWS::EC2::Route'
     DependsOn: GatewayToInternet1
@@ -102,7 +102,7 @@ Resources:
       VpcId: !Ref VPC1
       Tags:
         - Key: Name
-          Value: IronCityNACL
+          Value: ACG_NACL
   InboundHTTPPublicNetworkAcl1Entry:
     Type: 'AWS::EC2::NetworkAclEntry'
     Properties:
@@ -177,8 +177,8 @@ Resources:
     Type: 'AWS::EC2::Instance'
     Properties:
       InstanceType: !Ref InstanceTypeParameter
-      ImageId: 'ami-0bb4c991fa89d4b9b'
-      UserData: 
+      ImageId: 'ami-0440d3b780d96b29d'
+      UserData:
         Fn::Base64:
           !Sub |
             #!/bin/bash
@@ -186,20 +186,21 @@ Resources:
             yum install -y httpd
             systemctl start httpd
             systemctl enable httpd
-            echo "<html><h1>Instance Data</h1><h3>Availability Zone: " > /var/www/html/index.html
-            curl http://169.254.169.254/latest/meta-data/placement/availability-zone >> /var/www/html/index.html
-            echo "</h3><h3>Instance Id: " >> /var/www/html/index.html
-            curl http://169.254.169.254/latest/meta-data/instance-id >> /var/www/html/index.html
-            echo "</h3><h3>Public IP: " >> /var/www/html/index.html
-            curl http://169.254.169.254/latest/meta-data/public-ipv4 >> /var/www/html/index.html
-            echo "</h3><h3>Local IP: " >> /var/www/html/index.html
-            curl http://169.254.169.254/latest/meta-data/local-ipv4 >> /var/www/html/index.html
-            echo "</h3></html> " >> /var/www/html/index.html
+            TOKEN=$(curl --request PUT "http://169.254.169.254/latest/api/token" --header "X-aws-ec2-metadata-token-ttl-seconds: 3600")
+            INSTANCE_METADATA==$(curl -s http://169.254.169.254/latest/meta-data/ --header "X-aws-ec2-metadata-token: $TOKEN")
+            INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id --header "X-aws-ec2-metadata-token: $TOKEN")
+            PUBLIC_IP=$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4 --header "X-aws-ec2-metadata-token: $TOKEN")
+            LOCAL_IP=$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4 --header "X-aws-ec2-metadata-token: $TOKEN")
+            AZ=$(curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone --header "X-aws-ec2-metadata-token: $TOKEN")
+            echo "<html><h1>Instance Data</h1><h3>Availability Zone: "  $AZ > /var/www/html/index.html
+            echo "</h3><h3>Public IP: " $PUBLIC_IP >> /var/www/html/index.html
+            echo "</h3><h3>Local IP: " $LOCAL_IP >> /var/www/html/index.html
+            echo "</h3><h3>Instance Id: " $INSTANCE_ID >> /var/www/html/index.html
             echo 'setup done.' > /home/cloud_user/status
             'chown cloud_user:cloud_user /home/cloud_user/status'
       NetworkInterfaces:
         - GroupSet:
-            - !Ref EC2SecurityGroup1
+           - !Ref EC2SecurityGroup1
           AssociatePublicIpAddress: 'true'
           DeviceIndex: '0'
           DeleteOnTermination: 'true'
@@ -225,3 +226,6 @@ Resources:
       Tags:
         - Key: Name
           Value: ACG_SG
+        - Key: Test
+          Value: MyInstanceTest
+  
